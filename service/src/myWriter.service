@@ -1,0 +1,10 @@
+[Unit]
+Description=Logs system statistics to a log file
+Wants=myWriter.timer
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/myWriter.sh
+
+[Install]
+WantedBy=multi-user.target
