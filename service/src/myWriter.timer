@@ -1,0 +1,10 @@
+[Unit]
+Description=Logs some system statistics to a log file
+Requires=myWriter.service
+
+[Timer]
+Unit=myWriter.service
+OnCalendar=*-*-* *:*:00
+
+[Install]
+WantedBy=timers.target
