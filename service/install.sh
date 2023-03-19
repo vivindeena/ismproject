@@ -26,6 +26,7 @@ installFiles() {
     mkdir -p /var/log/test1/
     touch /var/log/test1/time.log
     touch /var/log/test1/audit.log
+    sed '7s/audit/test1/'
 
     cp ./src/myWriter.service ./src/myWriter.timer /etc/systemd/system/
     cp ./src/myWriter.sh /usr/bin/
