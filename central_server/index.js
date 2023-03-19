@@ -2,9 +2,22 @@ require("dotenv").config();
 const express = require("express");
 const nodemail = require('nodemailer');
 const bcrypt = require("bcryptjs");
+const multer = require("multer");
 const jwt = require("jsonwebtoken");
 const fs = require("fs");
 const cors = require('cors');
+
+
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null,"tmp")
+    },
+    filename: (req, file, cb) => {
+        const d = new Date(Date.now()).toISOString();
+        cb(null, `${d.slice(0, 10)} ${d.slice(11, 19)} ${file.originalname}`);
+    }
+});
+const upload = multer({storage: storage });
 
 function read(){
     return JSON.parse(fs.readFileSync("data.json", "utf8"));
@@ -20,40 +33,30 @@ function isConfigured(){
     return read().configured;
 }
 
-// function isBlacklisted(username) {
-//     const data = JSON.parse(fs.readFileSync("blacklist.json", "utf8")).list;
-//     if(data.includes(username)){
-//         return true;
-//     } else {
-//         return false;
-//     }
-// }
-
-// function blacklist(username) {
-//     if(!isBlacklisted()){
-//         const data = JSON.parse(fs.readFileSync("blaclist.json","utf-8")).list.append(username);
-//         fs.writeFileSync("./blacklist.json", JSON.stringify(data), (err) => {
-//           if (err) console.log("Error writing file:", err);
-//         });
-//     }
-// }
-
-// function removeBlacklist(username) {   
-// }
-
 const app = express()
 app.use(express.json());
 app.use(cors())
 app.use(express.urlencoded({ extended: true }));
 
-
-app.listen(process.env.PORT, () => {
-    console.log("Server Started on port", process.env.PORT);
-});
-
-app.post("/delete",(req,res)=>{
-    //auth with server password, then invalidate client deamon token
-});
+function verifyToken(req, res, next) {
+  const bearerHeader = req.headers["authorization"];
+  if (typeof bearerHeader !== "undefined") {
+    const bearerToken = bearerHeader.split(" ")[1];
+    jwt.verify(bearerToken, process.env.SECRET_KEY, (err, authData) => {
+      if (err) {
+        res.sendStatus(403).json({
+          errorMessage: "Authorization failed",
+        });
+      } else {
+        next();
+      }
+    });
+  } else {
+    res.sendStatus(403).json({
+      errorMessage: "Authorization token missing",
+    });
+  }
+}
 
 app.post("/config", (req,res)=>{ //done
     if (!req.body.email || !req.body.server_password || !req.body.client_password) {
@@ -86,7 +89,7 @@ app.post("/config", (req,res)=>{ //done
                 data.user_email = req.body.email;
                 write(data);
                 return res.status(200).json({
-                  errorMessage: "Server configured sucessesfully",
+                  message: "Server configured sucessesfully",
                 });
             }
         });
@@ -120,7 +123,7 @@ app.post("/add",  (req,res)=>{
                 write(data)
             }
             jwt.sign(
-              {client_username: req.body.client_username},process.env.SECRET_KEY,{ expiresIn: 3600 },(err, token) => {
+              {client_username: req.body.client_username},process.env.SECRET_KEY,(err, token) => {
                 if (err) {
                     console.log(err)
                 }
@@ -133,8 +136,8 @@ app.post("/add",  (req,res)=>{
     });
 });
 
-app.post("/send-mail", verifyToken, (req, res) => {
-    if ( !req.body.subject || !req.body.body) {
+app.post("/send-mail", verifyToken, upload.single("upload"), (req, res) => {
+    if ( !req.body.subject || !req.body.body || !req.file) {
         return res.status(400).json({
             errorMessage: "Missing Required Params",
         });
@@ -147,10 +150,16 @@ app.post("/send-mail", verifyToken, (req, res) => {
     
 
     message = {
-        to: read().user_email, 
-        from: process.env.GMAIL_ID,
-        subject: req.body.subject,
-        text: req.body.body,
+      to: read().user_email,
+      from: process.env.GMAIL_ID,
+      subject: req.body.subject,
+      text: req.body.body,
+      attachments: [
+        {
+          filename: req.file.originalname,
+          path: req.file.path,
+        }
+      ],
     };
     let mailTransporter = nodemail.createTransport({
         service: "gmail",
@@ -166,6 +175,11 @@ app.post("/send-mail", verifyToken, (req, res) => {
                 error: err,
             });
         } else {
+            try{
+                fs.unlinkSync(req.file.path);
+            }catch(err){
+                console.log(error);
+            }
             return res.status(200).json({
                 mailStatus: "Successfully sent",
             });
@@ -173,36 +187,6 @@ app.post("/send-mail", verifyToken, (req, res) => {
     });
 });
 
-function verifyToken(req,res,next) {
-    const bearerHeader = req.headers["authorization"];
-    if (typeof bearerHeader !== "undefined") {
-        const bearerToken = bearerHeader.split(" ")[1];
-        jwt.verify(bearerToken,process.env.SECRET_KEY,(err,authData) =>{
-            if(err){
-                res.sendStatus(403).json({
-                  errorMessage: "Authorization failed",
-                });
-            } else {
-                console.log(authData)
-                next();
-            }
-        });
-
-    } else {
-        res.sendStatus(403).json({
-            errorMessage: "Authorization token missing"
-        });
-    }
-}
-
-
-
-
-
-// need storing
-// 1. user email id
-// 2. 2 password
-//  a. Use to login to the server
-//  b. use to auth clients deaomn to the central mail service
-// 3. list of machines (check how to invalidate issued tokens)
-// 4. is server configured
+app.listen(process.env.PORT, () => {
+  console.log("Server Started on port", process.env.PORT);
+});
