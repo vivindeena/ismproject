@@ -14,15 +14,12 @@ setEmail {
     BODY="$(date -d @$logtime)"
 
     LOGFILE="/var/log/test1/audit.log"
-    #send this using -data-binary? use -F? to pass as attachment?
 
     curl --location --request POST 'localhost:3000/send-mail' \
-        --header "Authorization: Bearer $token" \
-        --header 'Content-Type: application/json' \
-        --data-raw '{
-        "subject" : "'$SUBJECT'",
-            "body" : "'$BODY'"
-        }'
+    --header "Authorization: Bearer $token" \
+    --form "subject= $SUBJECT"\
+    --form "body= $BODY"\
+    --form "upload=@$LOGFILE"
 
 }
 
