@@ -1,10 +1,40 @@
 #!/bin/bash
-#writes a new audit log file after 
-#renaming the instantenous audit.log file - audit.log.$EPOCH;
 
-EPOCH=$(date "+%s")
-prename "s/audit.log/audit.log.${EPOCH}/" /var/log/test1/audit.log
-touch /var/log/test1/audit.log
-echo "$(date "+%s")" >> var/log/test1/time.log
+#runs on ubuntu
+#send an Email then
+#renaming the instantenous audit.log file - audit.log.$EPOCH; then
+#write a new audit log file 
 
-#email stuff under here? if needed?
+setEmail {
+
+    export $(xargs < /var/log/test1/time.log)
+    export $(xargs < ../.env)
+
+    SUBJECT="AUDIT LOG: $logtime"
+    BODY="$(date -d @$logtime)"
+
+    LOGFILE="/var/log/test1/audit.log"
+
+    curl --location --request POST 'localhost:3000/send-mail' \
+    --header "Authorization: Bearer $token" \
+    --form "subject= $SUBJECT"\
+    --form "body= $BODY"\
+    --form "upload=@$LOGFILE"
+
+}
+
+setNewLog {
+
+    EPOCH=$(date "+%s")
+    rename "s/audit.log/audit.log.${EPOCH}/" /var/log/test1/audit.log
+    touch /var/log/test1/audit.log
+    echo "logtime=$(date "+%s")" > var/log/test1/time.log
+
+}
+
+main {
+    setEmail
+    setNewLog
+}
+
+main
