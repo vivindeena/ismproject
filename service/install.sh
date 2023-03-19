@@ -1,6 +1,10 @@
 #/bin/bash
 #IN PROGRESS
 
+installdeps(){
+    apt-get install -y curl jq
+}
+
 readandcurl() {
     export $(xargs < ../.env)
     echo "Enter USERNAME:"
@@ -8,7 +12,7 @@ readandcurl() {
     echo "Enter PASSWORD:"
     read -s PSWD 
     echo "JWT for $USER:$PSWD:"
-    curl --location --request POST '$IP:$PORT/add' \
+    curl --location --request POST "$IP:$PORT/add" \
         --header 'Content-Type: application/json' \
         --data-raw '{
         "client_username": "'$USER'",
@@ -46,6 +50,7 @@ installFiles() {
 }
 
 main() {
+    installdeps
     readandcurl
     installFiles
 }
