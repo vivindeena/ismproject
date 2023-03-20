@@ -15,7 +15,7 @@ setEmail {
 
     LOGFILE="/var/log/test1/audit.log"
 
-    curl --location --request POST "$IP:$PORT/send-mail" \
+    curl --location --request POST "$DOMAIN/send-mail" \
     --header "Authorization: Bearer $token" \
     --form "subject= $SUBJECT"\
     --form "body= $BODY"\

@@ -6,13 +6,13 @@ installdeps(){
 }
 
 readandcurl() {
-    export $(xargs < ../.env)
+    export $(xargs < ./.env)
     echo "Enter USERNAME:"
     read USER
     echo "Enter PASSWORD:"
     read -s PSWD 
     echo "JWT for $USER:$PSWD:"
-    curl --location --request POST "$IP:$PORT/add" \
+    curl --location --request POST "$DOMAIN/add" \
         --header 'Content-Type: application/json' \
         --data-raw '{
         "client_username": "'$USER'",
