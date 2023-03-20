@@ -1,11 +1,10 @@
 #!/bin/bash
-
 #runs on ubuntu
 #send an Email then
 #renaming the instantenous audit.log file - audit.log.$EPOCH; then
 #write a new audit log file 
 
-setEmail {
+setEmail() {
 
     export $(xargs < /var/log/test1/time.log)
     export $(xargs < ../.env)
@@ -23,7 +22,7 @@ setEmail {
 
 }
 
-setNewLog {
+setNewLog() {
 
     EPOCH=$(date "+%s")
     rename "s/audit.log/audit.log.${EPOCH}/" /var/log/test1/audit.log
@@ -32,7 +31,7 @@ setNewLog {
 
 }
 
-main {
+main() {
     setEmail
     setNewLog
 }
