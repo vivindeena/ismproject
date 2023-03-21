@@ -1,7 +1,1 @@
-{
-  "configured": false,
-  "user_email": "",
-  "server_password": "",
-  "client_password": "",
-  "clients": []
-}
+{"configured":true,"user_email":"vivin.deena@gmail.com","server_password":"$2a$10$mHvCbQTc55/lFVCNDfGb/ukhKZ9oySNcsN1GcT7r84Ie3bDnSILfm","client_password":"$2a$10$1T/7M1XhUDRUoFWsnXjCeeLC8MNlDK8R/9Cl/OBq7mSJdomlqpdFi","clients":["test"]}
