@@ -76,7 +76,7 @@ installFiles() {
 }
 
 main() {
-    #installdeps
+    installdeps
     readandcurl
     if [[ $? -eq 0 ]]; then
         installFiles
