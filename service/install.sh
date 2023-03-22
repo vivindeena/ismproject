@@ -31,7 +31,7 @@ readandcurl() {
 
 installFiles() {
 
-    echo "\nEnter the frequency with which you'd like to recieve mails: 
+    printf "\nEnter the frequency with which you'd like to recieve mails: 
     \n(1) every minute
     \n(2) every 15 minutes
     \n(3) every 15 minutes
@@ -67,8 +67,8 @@ installFiles() {
     service auditd reload
     service auditd start
 
-    printf "SUCCESS!\n"
-    printf "Loaded Rules:\n"
+    printf "\nSUCCESS!"
+    printf "\nLoaded Rules:\n"
     auditctl -l
     systemctl start myWriter.service
     systemctl enable myWriter.service
@@ -81,7 +81,7 @@ main() {
     if [[ $? -eq 0 ]]; then
         installFiles
     else
-        echo "\nInstallion stopped."
+        printf "\nInstallation stopped."
     fi
 }
 
