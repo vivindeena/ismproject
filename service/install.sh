@@ -1,4 +1,4 @@
-#/bin/bash
+#!/bin/bash
 #IN PROGRESS
 
 installdeps(){
@@ -20,7 +20,7 @@ readandcurl() {
         }' > token.json
 
     touch .env
-    jq -r 'to_entries|map("\(.key)=\(.value|tostring)")|.[]' token.json > .env
+    jq -r 'to_entries|map("\(.key)=\(.value|tostring)")|.[]' token.json >> .env
     rm token.json
 
 }
