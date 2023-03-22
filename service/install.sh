@@ -37,7 +37,7 @@ installFiles() {
 
     #specify required rules files here, specified a few sample files here.
     cp /usr/share/doc/auditd/examples/rules/40-local.rules /etc/audit/rules.d/
-    augenruleuses --load 
+    augenrules --load 
     service auditd reload
     service auditd start
 
