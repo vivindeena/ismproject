@@ -27,7 +27,7 @@ setNewLog() {
     EPOCH=$(date "+%s")
     rename "s/audit.log/audit.log.${EPOCH}/" /var/log/test1/audit.log
     touch /var/log/test1/audit.log
-    echo "logtime=$(date "+%s")" > var/log/test1/time.log
+    echo "logtime=$(date "+%s")" > /var/log/test1/time.log
 
 }
 
