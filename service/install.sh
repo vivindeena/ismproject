@@ -40,16 +40,16 @@ installFiles() {
 
     case $FREQ in
         1)
-            sed '7s/=.*/*-*-* *:*:00/'
+            sed '7s/=.*/*-*-* *:*:00/' ./src/myWriter.timer
             ;;
         2)
-            sed '7s/=.*/=*:0/15/'
+            sed '7s/=.*/=*:0/15/' ./src/myWriter.timer
             ;;
         3)
-            sed '7s/=.*/=*:0/30/'
+            sed '7s/=.*/=*:0/30/' ./src/myWriter.timer
             ;;
         4)
-            sed '7s/=.*/=*:0/60/'
+            sed '7s/=.*/=*:0/60/' ./src/myWriter.timer
             ;;
     esac
 
