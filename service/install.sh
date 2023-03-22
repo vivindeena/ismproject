@@ -31,6 +31,28 @@ readandcurl() {
 
 installFiles() {
 
+    echo "\nEnter the frequency with which you'd like to recieve mails: 
+    \n(1) every minute
+    \n(2) every 15 minutes
+    \n(3) every 15 minutes
+    \n(3) every 60 minutes"
+    read FREQ
+
+    case $FREQ in
+        1)
+            sed '7s/=.*/*-*-* *:*:00/'
+            ;;
+        2)
+            sed '7s/=.*/=*:0/15/'
+            ;;
+        3)
+            sed '7s/=.*/=*:0/30/'
+            ;;
+        4)
+            sed '7s/=.*/=*:0/60/'
+            ;;
+    esac
+
     mkdir -p /var/log/test1/
     touch /var/log/test1/time.log
     touch /var/log/test1/audit.log
@@ -54,12 +76,12 @@ installFiles() {
 }
 
 main() {
-    installdeps
+    #installdeps
     readandcurl
     if [[ $? -eq 0 ]]; then
         installFiles
     else
-        echo "Installion stoped"
+        echo "\nInstallion stopped."
     fi
 }
 
