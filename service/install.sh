@@ -7,22 +7,26 @@ installdeps(){
 
 readandcurl() {
     export $(xargs < ./.env)
-    echo "Enter USERNAME:"
+    echo -n "Enter USERNAME:"
     read USER
     echo "Enter PASSWORD:"
     read -s PSWD 
-    echo "JWT for $USER:$PSWD:"
-    curl --location --request POST "$DOMAIN/add" \
+    CODE=$(curl -w '%{http_code}' -o token.json\
+        --location --request POST "$DOMAIN/add" \
         --header 'Content-Type: application/json' \
         --data-raw '{
         "client_username": "'$USER'",
             "password" : "'$PSWD'"
-        }' > token.json
-
-    touch .env
-    jq -r 'to_entries|map("\(.key)=\(.value|tostring)")|.[]' token.json >> .env
-    rm token.json
-
+        }')
+    if [[ "$CODE" =~ ^2 ]]; then
+        jq -r 'to_entries|map("\(.key)=\(.value|tostring)")|.[]' token.json >> .env
+        rm token.json
+        return 0;
+    else
+        cat token.json
+        rm token.json
+        return -1;
+    fi
 }
 
 installFiles() {
@@ -52,7 +56,11 @@ installFiles() {
 main() {
     installdeps
     readandcurl
-    installFiles
+    if [[ $? -eq 0 ]]; then
+        installFiles
+    else
+        echo "Installion stoped"
+    fi
 }
 
 main

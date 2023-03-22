@@ -14,12 +14,21 @@ setEmail() {
 
     LOGFILE="/var/log/test1/audit.log"
 
-    curl --location --request POST "$DOMAIN/send-mail" \
-    --header "Authorization: Bearer $token" \
-    --form "subject= $SUBJECT"\
-    --form "body= $BODY"\
-    --form "upload=@$LOGFILE"
-
+    CODE=$(curl -w '%{http_code}' --stderr my_err_file  -o output\
+        --header "Authorization: Bearer $token" \
+        --form "subject= $SUBJECT"\
+        --form "body= $BODY"\
+        --form "upload=@$LOGFILE"
+        )
+    cat output
+    rm output
+    if [[ "$CODE" =~ ^2 ]]; then
+        echo 
+        return 0;
+    else
+        echo 
+        return -1;
+    fi
 }
 
 setNewLog() {
