@@ -1,11 +1,11 @@
 #!/bin/bash 
-#IN PROGRESS
+#IN PROGRES
 
 installdeps(){
     apt-get install -y curl jq
 }
 readandcurl() {
-    export $(xargs < ./.env)
+    export $(xargs < $LOGDIR/.env)
     echo -n "Enter USERNAME:"
     read USER
     echo "Enter PASSWORD:"
@@ -18,12 +18,13 @@ readandcurl() {
             "password" : "'$PSWD'"
         }')
     if [[ "$CODE" =~ ^2 ]]; then
-        jq -r 'to_entries|map("\(.key)=\(.value|tostring)")|.[]' token.json >> .env
+	cp .env $LOGDIR/.env
+        jq -r 'to_entries|map("\(.key)=\(.value|tostring)")|.[]' token.json >> $LOGDIR/.env
         rm token.json
         return 0;
     else
         cat token.json
-        rm token.json
+        #rm token.json
         return -1;
     fi
 }
@@ -33,7 +34,7 @@ installFiles() {
     printf "\nEnter the frequency with which you'd like to recieve mails: 
     \n(1) every minute
     \n(2) every 15 minutes
-    \n(3) every 15 minutes
+    \n(3) every 30 minutes
     \n(3) every 60 minutes"
     read FREQ
 
@@ -59,12 +60,10 @@ installFiles() {
 
     #################
 
-    mkdir -p /var/log/test1/
 
     LOGDIR="/var/log/test1"
     cp ./time.log $LOGDIR/time.log
     touch $LOGDIR/audit.log
-    touch /home/school/audit.log
 
     cp ./src/myWriter.service ./src/myWriter.timer /etc/systemd/system/
     cp ./src/myWriter.sh /usr/bin/
@@ -92,6 +91,10 @@ installFiles() {
 }
 
 main() {
+    mkdir -p /var/log/test1/
+    LOGDIR="/var/log/test1"
+    cp .env $LOGDIR/.env
+
     installdeps
     readandcurl
     if [[ $? -eq 0 ]]; then
