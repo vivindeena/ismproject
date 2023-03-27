@@ -1,10 +1,9 @@
-#!/bin/bash
+#!/bin/bash 
 #IN PROGRESS
 
 installdeps(){
     apt-get install -y curl jq
 }
-
 readandcurl() {
     export $(xargs < ./.env)
     echo -n "Enter USERNAME:"
@@ -38,31 +37,40 @@ installFiles() {
     \n(3) every 60 minutes"
     read FREQ
 
+    mul=0
     case $FREQ in
         1)
             sed '7s/=.*/*-*-* *:*:00/' ./src/myWriter.timer
+            mul=60
             ;;
         2)
-            sed '7s/=.*/=*:0/15/' ./src/myWriter.timer
+            sed '7s/=.*/=*:0\/15/' ./src/myWriter.timer
+            mul=900
             ;;
         3)
-            sed '7s/=.*/=*:0/30/' ./src/myWriter.timer
+            sed '7s/=.*/=*:0\/30/' ./src/myWriter.timer
+            mul=1800
             ;;
         4)
-            sed '7s/=.*/=*:0/60/' ./src/myWriter.timer
+            sed '7s/=.*/=*:0\/60/' ./src/myWriter.timer
+            mul=3600
             ;;
     esac
 
+    #################
+
     mkdir -p /var/log/test1/
-    touch /var/log/test1/time.log
-    touch /var/log/test1/audit.log
-    sed '7s/log\/audit/log\/test1/' /etc/audit/auditd.conf
+
+    LOGDIR="/var/log/test1"
+    cp ./time.log $LOGDIR/time.log
+    touch $LOGDIR/audit.log
+    touch /home/school/audit.log
 
     cp ./src/myWriter.service ./src/myWriter.timer /etc/systemd/system/
     cp ./src/myWriter.sh /usr/bin/
 
     #specify required rules files here, specified a few sample files here.
-    cp /usr/share/doc/auditd/examples/rules/40-local.rules /etc/audit/rules.d/
+    #cp /usr/share/doc/auditd/examples/rules/40-local.rules /etc/audit/rules.d/
     augenrules --load 
     service auditd reload
     service auditd start
@@ -70,6 +78,14 @@ installFiles() {
     printf "\nSUCCESS!"
     printf "\nLoaded Rules:\n"
     auditctl -l
+
+    echo mul is $mul
+    sed -i "1s/mul=.*/mul=$mul/" $LOGDIR/time.log
+    sed -i "2s/=.*/=$(date +%s)/" $LOGDIR/time.log
+    sed -i "3s/=.*/=$(($(date +%s)+$mul))/" $LOGDIR/time.log
+    cat $LOGDIR/time.log
+    systemctl daemon-reload
+
     systemctl start myWriter.service
     systemctl enable myWriter.service
 
