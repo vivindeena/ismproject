@@ -5,16 +5,17 @@
 #write a new audit log file 
 
 setEmail() {
+    LOGDIR="/var/log/test1"
 
-    export $(xargs < /var/log/test1/time.log)
+    export $(xargs < $LOGDIR/time.log)
     export $(xargs < ../.env)
 
-    SUBJECT="AUDIT LOG: $logtime"
-    BODY="$(date -d @$logtime)"
+    SUBJECT="AUDIT LOG: $startTime to: $endTime"
+    BODY="$(date -d @$startTime)"
 
     LOGFILE="/var/log/test1/audit.log"
     COUNT=0
-    while [ $COUNT -le 5 ]; do
+    #while [ $COUNT -le 5 ]; do
         CODE=$(curl -w '%{http_code}' --stderr my_err_file  -o output\
             --header "Authorization: Bearer $token" \
             --form "subject= $SUBJECT"\
@@ -23,7 +24,7 @@ setEmail() {
             )
         cat output
         rm output
-
+        :'
         if [[ "$CODE" =~ ^2 ]]; then
             break
         else
@@ -35,14 +36,31 @@ setEmail() {
         systemctl stop myService.service
         echo "$(date -d @$logtime): Service Stopped because mails are not sent, check and restart the service with 'systemctl start myService.service'" >>/var/log/test1/log.err
     fi
+    '
 }
 
 setNewLog() {
 
-    EPOCH=$(date "+%s")
-    rename "s/audit.log/audit.log.${EPOCH}/" /var/log/test1/audit.log
-    touch /var/log/test1/audit.log
-    echo "logtime=$(date "+%s")" > /var/log/test1/time.log
+    LOGDIR="/var/log/test1"
+
+    export $(xargs < $LOGDIR/time.log)
+
+    echo "before"
+    echo $mul
+    echo $startTime
+    echo $endTime
+    ausearch -ts $(date -d @$startTime +'%m/%d/%Y %H:%M:%S') -te $(date -d @$endTime +'%m/%d/%Y %H:%M:%S') -m all -i | tee $LOGDIR/audit.log
+
+    startTime=$(($endTime + 1))
+    endTime=$(($startTime+$mul))
+
+    echo "after"
+    echo $mul
+    echo $startTime
+    echo $endTime
+    
+    sed -i "s/startTime=.*/startTime=$startTime/g" $LOGDIR/time.log
+    sed -i "s/endTime=.*/endTime=$endTime/g" $LOGDIR/time.log
 
 }
 
