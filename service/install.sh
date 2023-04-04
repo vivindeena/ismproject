@@ -80,8 +80,6 @@ installFiles() {
 
     echo mul is $mul
     sed -i "1s/mul=.*/mul=$mul/" $LOGDIR/time.log
-    sed -i "2s/=.*/=$(date +%s)/" $LOGDIR/time.log
-    sed -i "3s/=.*/=$(($(date +%s)+$mul))/" $LOGDIR/time.log
     cat $LOGDIR/time.log
     systemctl daemon-reload
 
@@ -92,6 +90,9 @@ installFiles() {
 
 main() {
     mkdir -p /var/log/test1/
+    sudo -u vivin mkdir /home/vivin/myWriter/
+    ls -al $HOME/myWriter
+    sudo -u vivin touch /home/vivin/myWriter/log.txt
     LOGDIR="/var/log/test1"
     cp .env $LOGDIR/.env
 
@@ -102,6 +103,7 @@ main() {
     else
         printf "\nInstallation stopped."
     fi
+    ls -al $HOME/myWriter
 }
 
 main

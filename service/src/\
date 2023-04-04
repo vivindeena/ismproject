@@ -13,7 +13,8 @@ setEmail() {
     SUBJECT="AUDIT LOG: $startTime to: $endTime"
     BODY="$(date -d @$startTime)"
 
-    LOGFILE="/home/vivin/myWriter/log.txt"
+    mkdir $HOME/.myWriter
+    LOGFILE="/home/vivin/.myWriter/audit.log"
     echo $DOMAIN | tee -a $LOGDIR/params.log
     echo $token | tee -a $LOGDIR/params.log
     echo $SUBJECT | tee -a $LOGDIR/params.log
@@ -31,30 +32,32 @@ setEmail() {
 
 setNewLog() {
 
-    LOGFILE="/home/vivin/myWriter/log.txt"
     LOGDIR="/var/log/test1"
 
     export $(xargs < $LOGDIR/time.log)
 
-    startTime=$(($(date +%s)-$mul))
-    endTime=$(date +%s)
-
-    echo "currently"
+    echo "before"
     echo $mul
     echo $startTime
     echo $endTime
-    echo $(date -d @$startTime)
-    echo $(date -d @$endTime)
     ausearch -ts $(date -d @$startTime +'%d/%m/%y %H:%M:%S') -te $(date -d @$endTime +'%d/%m/%y %H:%M:%S') -m all -i | tee $LOGFILE
 
-    echo "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
-    echo "ausearch -ts $(date -d @$startTime +'%d/%m/%y %H:%M:%S') -te $(date -d @$endTime +'%d/%m/%y %H:%M:%S') -m all -i | tee $LOGFILE"
-    echo "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    startTime=$(($endTime))
+    endTime=$(($startTime+$mul))
+
+    echo "after"
+    echo $mul
+    echo $startTime
+    echo $endTime
+    
+    sed -i "s/startTime=.*/startTime=$startTime/g" $LOGDIR/time.log
+    sed -i "s/endTime=.*/endTime=$endTime/g" $LOGDIR/time.log
+
 }
 
 main() {
-    setNewLog
     setEmail
+    setNewLog
 }
 
 main
